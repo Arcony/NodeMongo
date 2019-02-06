@@ -1,7 +1,8 @@
 let express = require('express')
 let app = express()
-let personRoute = require('./routes/person')
+let connectionRoute = require('./routes/connection')
 let customerRoute = require('./routes/customer')
+let postRoute = require('./routes/post')
 let path = require('path')
 let bodyParser = require('body-parser')
 
@@ -12,14 +13,14 @@ app.use(bodyParser.urlencoded({
   }));
 
 app.use((req, res, next )=> {
-    console.log(`${new Date().toString()} => ${req.originalUrl} ${req.body.email} `, req.body);
+    console.log(`${new Date().toString()} => ${req.originalUrl}`, req.body);
     next()
 })
-app.use(personRoute)
+app.use(postRoute)
 app.use(customerRoute)
+app.use(connectionRoute)
 app.use(express.static('public'))
 app.use((err, req,res, next) => {
-    res.sendFile(path.join(__direname, '500.html'))
 })
 
 app.get('/', (req, res) => {

@@ -5,11 +5,28 @@ var mongoDB = 'mongodb://127.0.0.1/nodemongo'
 mongoose.connect(mongoDB);
 
 let CustomerSchema = new mongoose.Schema({
-    name: String,
+    
+    username: {
+      type: String,
+      require: true,
+      unique: true
+    },
     email: {
       type: String,
       required: true,
       unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    picture: {
+      type: String
+    },
+    isAdmin: {
+      type: Boolean,
+      require: true,
+      default: 0
     }
   })
   
