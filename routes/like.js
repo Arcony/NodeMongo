@@ -1,53 +1,34 @@
 let CustomerModel = require('../models/customer.model');
 let PostModel = require('../models/post.model');
+let MemeModel = require('../models/meme.model');
 let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
 let bcrypt = require('bcryptjs');
-const fs = require('fs');
-const path = require('path');
-const multer = require('multer');
 
 
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-      const uploadsDir = path.join(__dirname, '..', 'images', 'uploads', `${Date.now()}`)
-      fs.mkdirSync(uploadsDir)
-      cb(null, uploadsDir)
-    },
-    filename: function(req, file, cb) {
-      cb(null, file.originalname)
-    }
-  })
+router.post('/newlike', (req, res ) => {
+   
 
-const upload = multer({ storage })
-
-router.post('/newpost', upload.single('content'),(req, res ) => {
- 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
-    const remove = path.join(__dirname, '..','images','uploads');
-    const relPath = req.file.path.replace(remove, '');
-    var title = req.body.title;
-    var tag = req.body.tag;
-    var owner = userId;
 
-    
-
-    if ( title == null )
+    var memeId = req.body.memeId
+    var postId = req.body.postId
+  
+    if ( memeId == null || postId == null || userId == null)
     {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
-    let model = new PostModel({ 
-        title: title, 
-        content: relPath, 
-        tag: req.body.tag,
-        owner: userId
+
+    let model = new LikeModel({ 
+        postId: postId, 
+        memeId: memeId,
+        userId: userId
     });
     model.save()
     .then(doc => {
         if(!doc || doc.length === 0)  {
-
             return res.status(500).send(doc)
         }
         res.status(201).send(doc)
@@ -58,18 +39,18 @@ router.post('/newpost', upload.single('content'),(req, res ) => {
 })
 
 
-router.get('/post/:id', (req, res ) => {
+router.get('/getAllUserLikes/:userId', (req, res ) => {
     
     if(!req.params.id)
      {
-         return res.status(400).send('Wrong Post Number');
+         return res.status(400).send('Wrong Id Number');
      }
      
-    PostModel.findOne({
-       _id: req.params.id
+    LikeModel.findAll({
+       userId: req.params.id
     })
-    .then(function(PostFound) {
-        res.json({id: PostFound.id, title: PostFound.title, content: PostFound.content, tag: PostFound.tag, owner: PostFound.owner});
+    .then(function(LikeFound) {
+        res.json({LikeFound});
     })
     .catch(err => {
         res.status(500).json(err)
@@ -78,7 +59,45 @@ router.get('/post/:id', (req, res ) => {
 
 
 
-router.delete('/post/delete/:id', (req, res ) => {
+router.get('/getAllMemeLikes/:memeId', (req, res ) => {
+    
+    if(!req.params.id)
+     {
+         return res.status(400).send('Wrong Id Number');
+     }
+     
+    LikeModel.findAll({
+       memeId: req.params.id
+    })
+    .then(function(LikeFound) {
+        res.json({LikeFound});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+router.get('/getLike', (req, res ) => {
+    
+    if(!req.body.memeId || !req.body.userId)
+     {
+         return res.status(400).send('Wrong params');
+     }
+     
+    LikeModel.findOne({
+       memeId: req.body.memeId,
+       userId: req.body.userId
+    })
+    .then(function(LikeFound) {
+        res.json({LikeFound});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+router.delete('/meme/delete/:id', (req, res ) => {
     
 
     var headerAuth  = req.headers['authorization'];
@@ -94,11 +113,11 @@ router.delete('/post/delete/:id', (req, res ) => {
     .then(function(userFound) {
         if(!userFound.isAdmin)
         {
-            PostModel.findOneAndRemove({
+            MemeModel.findOneAndRemove({
                 _id : req.params.id
             })
             .then(doc => {
-                return res.status(400).json({ 'success': 'Deleted' });
+                return res.status(400).json({ 'success': 'Meme Deleted' });
             })
             .catch(err => {
                 res.status(500).json(err)

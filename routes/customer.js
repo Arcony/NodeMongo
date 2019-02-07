@@ -1,8 +1,9 @@
-let CustomerModel = require('../models/customer.model')
-let express = require('express')
-let router = express.Router()
-var bcrypt = require('bcryptjs');
-
+let CustomerModel = require('../models/customer.model');
+let PostModel = require('../models/post.model');
+let jwtUtils = require('../utils/jwt.utils');
+let express = require('express');
+let router = express.Router();
+let bcrypt = require('bcryptjs');
 
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
@@ -57,16 +58,16 @@ router.post('/customer', (req, res ) => {
    
 })
 
-router.get('/customer', (req, res ) => {
-    if(!req.body.email)
+router.get('/customer/:id', (req, res ) => {
+    if(!req.params.id)
      {
-         return res.status(400).send('Missing Email');
+         return res.status(400).send('Missing User');
      }
     CustomerModel.findOne({
-        email: req.body.email
+        _id: req.params.id
     })
-    .then(doc => {
-        res.json({email: res.body.email, username: res.body.username, picture: res.body.picture});
+    .then(function(CustomerFound) {
+        res.json({id: CustomerFound.id, email: CustomerFound.email, username: CustomerFound.username, picture: CustomerFound.picture, isAdmin: CustomerFound.isAdmin});
     })
     .catch(err => {
         res.status(500).json(err)
@@ -74,72 +75,69 @@ router.get('/customer', (req, res ) => {
 })
 
 
-router.put('/customer', (req, res ) => {
+router.put('/customer/:id', (req, res ) => {
 
     var headerAuth  = req.headers['authorization'];
-    var email       = jwtUtils.getUserId(headerAuth);
-
-    if (email == null ||  password == null) {
-        return res.status(400).json({ 'error': 'missing parameters' });
+    var userId       = jwtUtils.getUserId(headerAuth);
+    if( userId == null )
+    {
+        return res.status(400).send('Wrong ID');
     }
+    CustomerModel.findOneAndUpdate({
+        _id: userId
+    },{$set : {picture : req.body.picture}})
+    .then(function(){
+        console.log(userId);
+        CustomerModel.findOne({
+            _id: userId
+        }).then(function(newUser) {
+            res.send(newUser)
+        })
+        .catch(function(){
+            return res.status(400).send('Wrong new User');
+        })
+    })
+    .catch(function(){
+        console.log("allo");
+        return res.status(400).send('Wrong User');
+    }) 
 
-    CustomerModel.findOne({
-        email: email
-    })
-    .then(doc => {
-        var userFound = doc;
-    })
-    .catch(err => {
-        res.status(500).json(err)
-    })
-
-    bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
-        CustomerModel.findOneAndUpdate({
-            email: req.body.email
-        }, {$set:req.body}, {
-            new: true, upsert: true
-        })
-        .then(doc => {
-            res.json(doc)
-        })
-        .catch(err => {
-            res.status(500).json(err)
-        })
-    });
 })
 
 
-router.delete('/customer', (req, res ) => {
+router.delete('/customer/:id', (req, res ) => {
     
 
     var headerAuth  = req.headers['authorization'];
-    var userId      = jwtUtils.getUserEmail(headerAuth);
+    var userId      = jwtUtils.getUserId(headerAuth);
 
     if (userId == null ) {
         return res.status(400).json({ 'error': 'User not logged' });
     }
 
     CustomerModel.findOne({
-        id: userId
+        _id: userId
     })
-    .then(doc => {
-        var userFound = doc;
+    .then(function(userFound) {
+        if(!userFound.isAdmin)
+        {
+            CustomerModel.findOneAndRemove({
+                _id : req.params.id
+            })
+            .then(doc => {
+                return res.status(400).json({ 'success': 'Deleted' });
+            })
+            .catch(err => {
+                res.status(500).json(err)
+            })
+        } else {
+            return res.status(400).json({ 'error': 'Your power do not work here' });
+        }
     })
     .catch(err => {
         res.status(500).json(err)
     })
-    if(userFound.isAdmin)
-    {
-        CustomerModel.findOneAndRemove({
-            email: req.body.email
-        })
-        .then(doc => {
-            res.json(doc)
-        })
-        .catch(err => {
-            res.status(500).json(err)
-        })
-    }
+   
     });
 
 
