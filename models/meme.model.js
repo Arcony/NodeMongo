@@ -18,11 +18,13 @@ let MemeSchema = new mongoose.Schema({
         type: String,
     },
     userId: {
-        type:String,
+        type:mongoose.Schema.Types.ObjectId,
+        ref: 'Customer',
         require: true
     },
     postId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
         require: true
     }
     

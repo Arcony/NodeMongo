@@ -18,7 +18,8 @@ let PostSchema = new mongoose.Schema({
         type: String,
     },
     userId: {
-        type:String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer',
         require: true
     }
 

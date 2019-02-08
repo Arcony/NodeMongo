@@ -7,17 +7,20 @@ mongoose.connect(mongoDB);
 let CommentSchema = new mongoose.Schema({
     
     postId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
         require: true
     },
 
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer',
         require: true
     },
 
     memeId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Meme',
         require: true
     },
     text: {

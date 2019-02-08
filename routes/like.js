@@ -121,40 +121,35 @@ router.get('/getLike', (req, res ) => {
 })
 
 
-router.delete('/meme/delete/:id', (req, res ) => {
+router.delete('/like/delete', (req, res ) => {
     
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
+    var memeId = req.body.memeId;
+    var postId = req.body.postId;
+    var commentId = req.body.commentId;
 
-    if (userId == null ) {
-        return res.status(400).json({ 'error': 'User not logged' });
+
+    if (userId == null || memeId == null || postId == null) {
+        return res.status(400).json({ 'error': 'params wrong' });
     }
 
-    CustomerModel.findOne({
-        _id: userId
-    })
-    .then(function(userFound) {
-        if(!userFound.isAdmin)
-        {
-            MemeModel.findOneAndRemove({
-                _id : req.params.id
+            LikeModel.findOneAndRemove({
+                _id : req.params.id,
+                memeId: memeId,
+                postId: postId,
+                commentId: commentId
+
             })
             .then(doc => {
-                return res.status(400).json({ 'success': 'Meme Deleted' });
+                return res.status(400).json({ 'success': 'Like Deleted' });
             })
             .catch(err => {
                 res.status(500).json(err)
             })
-        } else {
-            return res.status(400).json({ 'error': 'Your power do not work here' });
-        }
     })
-    .catch(err => {
-        res.status(500).json(err)
-    })
-   
-    });
+
 
 
 module.exports = router
