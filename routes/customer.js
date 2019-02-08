@@ -74,6 +74,17 @@ router.get('/customer/:id', (req, res ) => {
     })
 })
 
+router.get('/allCustomer', (req, res ) => {
+
+    CustomerModel.find()
+    .then(function(CustomersFound) {
+        res.send(CustomersFound);
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
 
 router.put('/customer/:id', (req, res ) => {
 

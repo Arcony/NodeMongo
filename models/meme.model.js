@@ -10,18 +10,14 @@ let MemeSchema = new mongoose.Schema({
       type: String,
       require: true
     },
-    path: {
-        type: String,
-        required: true
-    },
-    label: {
+    content: {
         type: String,
         required: true
     },
     tag: {
         type: String,
     },
-    creator: {
+    userId: {
         type:String,
         require: true
     },

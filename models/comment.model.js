@@ -4,7 +4,7 @@ var mongoDB = 'mongodb://127.0.0.1/nodemongo'
 
 mongoose.connect(mongoDB);
 
-let LikeSchema = new mongoose.Schema({
+let CommentSchema = new mongoose.Schema({
     
     postId: {
         type: String,
@@ -20,11 +20,11 @@ let LikeSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-
-    commentId: {
+    text: {
         type: String,
+        require: true
     }
     
   })
   
-  module.exports = mongoose.model('Like', LikeSchema)
+  module.exports = mongoose.model('Comment', CommentSchema)

@@ -1,14 +1,14 @@
 let CustomerModel = require('../models/customer.model');
 let PostModel = require('../models/post.model');
 let MemeModel = require('../models/meme.model');
-let LikeModel = require('../models/like.model');
+let CommentModel = require('../models/comment.model');
 let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
 let bcrypt = require('bcryptjs');
 
 
-router.post('/newlike', (req, res ) => {
+router.post('/newComment', (req, res ) => {
    
 
     var headerAuth  = req.headers['authorization'];
@@ -16,20 +16,20 @@ router.post('/newlike', (req, res ) => {
 
     var memeId = req.body.memeId
     var postId = req.body.postId
-    var commentId = req.body.commentId
+    var text = req.body.text
   
-    if ( memeId == null || postId == null || userId == null)
+    if ( memeId == null || postId == null || userId == null || text == null)
     {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
-    console.log("nosu a")
-    let model = new LikeModel({ 
+
+    let model = new CommentModel({ 
+        text: text,
         postId: postId, 
         memeId: memeId,
-        userId: userId,
-        commentId: commentId
+        userId: userId
     });
-    console.log("test")
+
     model.save()
     .then(doc => {
         if(!doc || doc.length === 0)  {
@@ -43,57 +43,18 @@ router.post('/newlike', (req, res ) => {
 })
 
 
-router.get('/getAllUserLikes/:userId', (req, res ) => {
-    console.log("test");
-
-    if(!req.params.userId)
-     {
-         return res.status(400).send('Wrong Id Number');
-     }
-    LikeModel.find({
-       userId: req.params.userId
-    })
-    .then(function(LikeFound) {
-        res.json({LikeFound});
-    })
-    .catch(err => {
-        res.status(500).json(err)
-    })
-})
-
-
-
-router.get('/getAllMemeLikes/:memeId', (req, res ) => {
-    
-    if(!req.params.memeId)
-     {
-         return res.status(400).send('Wrong Id Number');
-     }
-     
-    LikeModel.find({
-       memeId: req.params.memeId
-    })
-    .then(function(LikesFound) {
-        res.json({LikesFound});
-    })
-    .catch(err => {
-        res.status(500).json(err)
-    })
-})
-
-
-router.get('/getAllCommentLikes/:commentId', (req, res ) => {
+router.get('/getAllUserComments/:userId', (req, res ) => {
     
     if(!req.params.id)
      {
          return res.status(400).send('Wrong Id Number');
      }
      
-    LikeModel.findAll({
-       memeId: req.params.id
+    CommentModel.find({
+       userId: req.params.id
     })
-    .then(function(LikeFound) {
-        res.json({LikeFound});
+    .then(function(CommentFound) {
+        res.json({CommentFound});
     })
     .catch(err => {
         res.status(500).json(err)
@@ -101,19 +62,57 @@ router.get('/getAllCommentLikes/:commentId', (req, res ) => {
 })
 
 
-router.get('/getLike', (req, res ) => {
+
+router.get('/getAllMemeComments/:memeId', (req, res ) => {
+    
+    if(!req.params.id)
+     {
+         return res.status(400).send('Wrong Id Number');
+     }
+     
+    CommentModel.find({
+       memeId: req.params.id
+    })
+    .then(function(CommentFound) {
+        res.json({CommentFound});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+router.get('/getAllMemeComments', (req, res ) => {
     
     if(!req.body.memeId || !req.body.userId)
      {
          return res.status(400).send('Wrong params');
      }
      
-    LikeModel.findOne({
+    CommentModel.find({
        memeId: req.body.memeId,
        userId: req.body.userId
     })
-    .then(function(LikeFound) {
-        res.json({LikeFound});
+    .then(function(CommentFound) {
+        res.json({CommentFound});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+router.get('/getComment/:id', (req, res ) => {
+    
+    if( req.params.id )
+     {
+         return res.status(400).send('Wrong params');
+     }
+     
+    CommentModel.findOne({
+       _id: req.params.id
+    })
+    .then(function(CommentFound) {
+        res.json({CommentFound});
     })
     .catch(err => {
         res.status(500).json(err)

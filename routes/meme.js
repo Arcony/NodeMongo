@@ -5,18 +5,39 @@ let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
 let bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 
-router.post('/newmeme', (req, res ) => {
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      const uploadsDir = path.join(__dirname, '..', 'images', 'uploads', `${Date.now()}`)
+      fs.mkdirSync(uploadsDir)
+      cb(null, uploadsDir)
+    },
+    filename: function(req, file, cb) {
+      cb(null, file.originalname)
+    }
+  })
+
+const upload = multer({ storage })
+
+
+router.post('/newMeme', upload.single('content'), (req, res ) => {
    
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
 
+    const remove = path.join(__dirname, '..','images','uploads');
+    const relPath = req.file.path.replace(remove, '');
     var title = req.body.title;
     var tag = req.body.tag;
-    var creator = userId;
+    var userId = userId;
     var postId = req.body.postId
+    var content = req.body.content;
   
     if ( title == null )
     {
@@ -26,8 +47,9 @@ router.post('/newmeme', (req, res ) => {
     let model = new MemeModel({ 
         title: title, 
         tag: req.body.tag,
-        creator: userId,
-        postId: req.body.postId
+        userId: userId,
+        postId: req.body.postId,
+        content: relPath
     });
     model.save()
     .then(doc => {
@@ -42,6 +64,7 @@ router.post('/newmeme', (req, res ) => {
 })
 
 
+
 router.get('/meme/:id', (req, res ) => {
     
     if(!req.params.id)
@@ -53,7 +76,21 @@ router.get('/meme/:id', (req, res ) => {
        _id: req.params.id
     })
     .then(function(MemeFound) {
-        res.json({id: MemeFound.id, title: MemeFound.title, tag: MemeFound.tag, creator: MemeFound.owner, postId: MemeFound.postId});
+        res.json({id: MemeFound.id, title: MemeFound.title, tag: MemeFound.tag, userId: MemeFound.owner, postId: MemeFound.postId});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
+router.get('/allMeme', (req, res ) => {
+    
+    MemeModel.find({
+    }).populate('userId')
+    .then(function(memesFound) {
+        res.json(memesFound)
     })
     .catch(err => {
         res.status(500).json(err)

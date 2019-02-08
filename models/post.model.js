@@ -17,7 +17,7 @@ let PostSchema = new mongoose.Schema({
     tag: {
         type: String,
     },
-    owner: {
+    userId: {
         type:String,
         require: true
     }

@@ -30,7 +30,7 @@ router.post('/newpost', upload.single('content'),(req, res ) => {
     const relPath = req.file.path.replace(remove, '');
     var title = req.body.title;
     var tag = req.body.tag;
-    var owner = userId;
+    var userId = userId;
 
     
 
@@ -42,7 +42,7 @@ router.post('/newpost', upload.single('content'),(req, res ) => {
         title: title, 
         content: relPath, 
         tag: req.body.tag,
-        owner: userId
+        userId: userId
     });
     model.save()
     .then(doc => {
@@ -69,7 +69,21 @@ router.get('/post/:id', (req, res ) => {
        _id: req.params.id
     })
     .then(function(PostFound) {
-        res.json({id: PostFound.id, title: PostFound.title, content: PostFound.content, tag: PostFound.tag, owner: PostFound.owner});
+        res.json({id: PostFound.id, title: PostFound.title, content: PostFound.content, tag: PostFound.tag, userId: PostFound.userId});
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
+router.get('/allPost', (req, res ) => {
+    
+    PostModel.find({
+    })
+    .then(function(PostFound) {
+        res.json(PostFound)
     })
     .catch(err => {
         res.status(500).json(err)
@@ -83,6 +97,7 @@ router.delete('/post/delete/:id', (req, res ) => {
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
+    
 
     if (userId == null ) {
         return res.status(400).json({ 'error': 'User not logged' });
