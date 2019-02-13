@@ -9,13 +9,14 @@ const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(
 const PASSWORD_REGEX  = /^(?=.*\d).{4,8}$/;
 
 
+
 router.post('/customer', (req, res ) => {
     
 
     var email    = req.body.email;
     var username = req.body.username;
     var password = req.body.password;
-    var picture      = req.body.picture;
+    var picture      = '';
     var isAdmin = req.body.isAdmin;
 
     if (email == null || username == null || password == null) {

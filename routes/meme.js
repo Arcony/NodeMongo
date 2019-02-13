@@ -24,26 +24,28 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
-
-router.post('/newMeme', upload.single('content'), (req, res ) => {
+router.post('/newMeme',  upload.single('content'),  (req, res ) => {
    
+    console.log("test");
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
 
+    console.log(userId);
     const remove = path.join(__dirname, '..','images','uploads');
     const relPath = req.file.path.replace(remove, '');
+    console.log(relPath);
     var title = req.body.title;
     var tag = req.body.tag;
     var userId = userId;
     var postId = req.body.postId
     var content = req.body.content;
+    
   
     if ( title == null )
     {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
-
     let model = new MemeModel({ 
         title: title, 
         tag: req.body.tag,
@@ -85,10 +87,12 @@ router.get('/meme/:id', (req, res ) => {
 
 
 
-router.get('/allMeme', (req, res ) => {
+router.get('/allPostMemes/:id', (req, res ) => {
     
+    var postId = req.params.id;
     MemeModel.find({
-    }).populate('userId')
+        postId: postId
+    })
     .then(function(memesFound) {
         res.json(memesFound)
     })

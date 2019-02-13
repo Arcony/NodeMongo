@@ -8,8 +8,10 @@ let likeRoute = require('./routes/like')
 let commentRoute = require('./routes/comment')
 let path = require('path')
 let bodyParser = require('body-parser')
+var cors = require('cors');
 
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
@@ -27,6 +29,7 @@ app.use(likeRoute)
 app.use(commentRoute)
 app.use(express.static('public'))
 app.use((err, req,res, next) => {
+    
 })
 
 app.get('/', (req, res) => {
@@ -36,3 +39,4 @@ app.get('/', (req, res) => {
 
 app.listen(8080, () => console.log("Working"));
 
+module.exports = app;
