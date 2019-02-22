@@ -1,6 +1,9 @@
 let CustomerModel = require('../models/customer.model');
 let PostModel = require('../models/post.model');
+let LikeModel = require('../models/like.model');
 let MemeModel = require('../models/meme.model');
+let CommentModel = require('../models/comment.model');
+
 let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
@@ -26,18 +29,14 @@ const upload = multer({ storage })
 
 router.post('/newMeme',  upload.single('content'),  (req, res ) => {
    
-    console.log("test");
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
 
-    console.log(userId);
     const remove = path.join(__dirname, '..','images','uploads');
     const relPath = req.file.path.replace(remove, '');
-    console.log(relPath);
     var title = req.body.title;
     var tag = req.body.tag;
-    var userId = userId;
     var postId = req.body.postId
     var content = req.body.content;
     
@@ -102,6 +101,76 @@ router.get('/allPostMemes/:id', (req, res ) => {
 })
 
 
+router.get('/allMemesLikesComments/:postId', (req, res ) => {
+    console.log("wtf")
+    console.log("request received with params : ", req.params);
+    var headerAuth  = req.headers['authorization'];
+    var userId      = jwtUtils.getUserId(headerAuth);
+
+    var itemsProcessed = 0;
+    var itemsProcessedBis = 0;
+    var itemsProcessedBisBis = 0;
+    var itemsProcessedBisBisBis = 0;
+    var postId = req.params.postId;
+    MemeModel.find({
+        postId: postId
+    }).sort({'_id' : -1 })
+    .then(function(memesFound) {
+        var like = []
+        memesFound.forEach((item, index, array) => {
+                like = JSON.parse(JSON.stringify(memesFound));
+                LikeModel.find({ memeId: item._id})
+                .then(function(likesFind) {
+                    like[index].likes = likesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                    like.forEach((item, index, array) => {
+                        comments = JSON.parse(JSON.stringify(like));
+                        CommentModel.find({ memeId: item._id})
+                        .then(function(commentsFind) {
+
+                            comments[index].comments = commentsFind.length;
+                        itemsProcessedBis++;
+                        if(itemsProcessedBis === array.length) {                     
+                          comments.forEach((item, index, array) => {
+                            finalData = JSON.parse(JSON.stringify(comments));
+                            LikeModel.find({ memeId: item._id , userId: userId})
+                            .then(function(isLiked) {
+                                finalData[index].isLiked = false;
+                                if(isLiked[0]) {
+                                    finalData[index].isLiked = true;
+                                }
+                                itemsProcessedBisBis++;
+                                if(itemsProcessedBisBis === array.length) {
+                                finalDataBis = JSON.parse(JSON.stringify(finalData));
+                                finalDataBis.forEach((item, index, array) => {
+                                    CommentModel.find({ memeId: item._id})
+                                    .then(function(commentsNb) {
+                                        finalDataBis[index].commentsNb = commentsNb.length;        
+                                        itemsProcessedBisBisBis++;
+                                        if(itemsProcessedBisBisBis === array.length) {
+                                        callback(finalDataBis,res);
+                                        }
+                                    });
+                                });
+                                }
+                            });
+                        });
+                        }
+                      });
+                })
+
+                }
+              });
+        })
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
 
 router.delete('/meme/delete/:id', (req, res ) => {
     
@@ -137,6 +206,8 @@ router.delete('/meme/delete/:id', (req, res ) => {
     })
    
     });
+
+    function callback (item,res) { res.json(item); };
 
 
 module.exports = router

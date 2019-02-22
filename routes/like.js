@@ -14,12 +14,16 @@ router.post('/newlike', (req, res ) => {
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
 
+
+    console.log(req.body);
+
     var memeId = req.body.memeId
     var postId = req.body.postId
     var commentId = req.body.commentId
   
     if ( memeId == null || postId == null || userId == null)
     {
+        console.log(memeId,userId,postId);
         return res.status(400).json({ 'error': 'missing parameters' });
     }
     console.log("nosu a")
@@ -36,6 +40,36 @@ router.post('/newlike', (req, res ) => {
             return res.status(500).send(doc)
         }
         res.status(201).send(doc)
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+router.post('/dislike', (req, res ) => {
+    
+
+    
+    var headerAuth  = req.headers['authorization'];
+    var userId      = jwtUtils.getUserId(headerAuth);
+
+    var memeId = req.body.memeId
+    var postId = req.body.postId
+    var commentId = req.body.commentId
+    console.log("request go : ", req.body);
+
+    if(!req.body.memeId || !req.body.postId)
+     {
+         return res.status(400).send('Wrong params');
+     }
+     console.log("request go : ");
+    LikeModel.findOne({
+       memeId: req.body.memeId,
+       userId: userId
+    }).remove()
+    .then(function(LikeFound) {
+        res.json({LikeFound});
     })
     .catch(err => {
         res.status(500).json(err)

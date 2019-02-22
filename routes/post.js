@@ -1,5 +1,7 @@
 let CustomerModel = require('../models/customer.model');
 let PostModel = require('../models/post.model');
+let MemeModel = require('../models/meme.model');
+
 let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
@@ -26,18 +28,17 @@ router.post('/newpost', upload.single('content'),(req, res ) => {
  
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
+
     const remove = path.join(__dirname, '..','images','uploads');
     const relPath = req.file.path.replace(remove, '');
     var title = req.body.title;
     var tag = req.body.tag;
-    var userId = userId;
-
-    
 
     if ( title == null )
     {
         return res.status(400).json({ 'error': 'missing parameters' });
     }
+    
     let model = new PostModel({ 
         title: title, 
         content: relPath, 
@@ -78,14 +79,77 @@ router.get('/post/:id', (req, res ) => {
 
 
 
-router.get('/allPost', (req, res ) => {
+router.get('/allPostMemes', (req, res ) => {
     
+    var itemsProcessed = 0;
+    PostModel.find({
+    }).sort({'_id' : -1 })
+    .then(function(PostFound) {
+       var test = []
+        PostFound.forEach((item, index, array) => {
+                test = JSON.parse(JSON.stringify(PostFound));
+                MemeModel.find({ postId: item._id})
+                .then(function(MemesFind) {
+              test[index].memesRelated = MemesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                  callback(test,res);
+                }
+              });
+        })
+
+        
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+router.get('/allPostMemesForProfil/:id', (req, res ) => {
+    
+    var itemsProcessed = 0;
+    PostModel.find({'userId' : req.params.id
+    }).sort({'_id' : -1 })
+    .then(function(PostFound) {
+       var test = []
+        PostFound.forEach((item, index, array) => {
+                test = JSON.parse(JSON.stringify(PostFound));
+                MemeModel.find({ postId: item._id})
+                .then(function(MemesFind) {
+              test[index].memesRelated = MemesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                  callback(test,res);
+                }
+              });
+        })
+
+        
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+router.get('/allPost', (req, res ) => {
     PostModel.find({
     })
     .then(function(PostFound) {
-        res.json(PostFound)
+      res.json(PostFound);  
     })
     .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+router.get('/countPostMemes/:postId' , (req,res) => {
+    MemeModel.count({ postId: req.params.postId})
+    .then(function(MemesFind) {
+        res.json(MemesFind)
+    })
+    .catch(err =>{
         res.status(500).json(err)
     })
 })
@@ -128,5 +192,7 @@ router.delete('/post/delete/:id', (req, res ) => {
    
     });
 
+
+    function callback (item,res) {res.json(item);};
 
 module.exports = router

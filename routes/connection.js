@@ -10,7 +10,7 @@ router.post('/login', (req, res ) => {
     var password = req.body.password;
 
     if (email == null ||  password == null) {
-        return res.status(400).json({ 'error': 'missing parameters' });
+        return res.status(400).json({ 'error': 'Missing parameters' });
     }
 
     CustomerModel.findOne({
@@ -29,15 +29,15 @@ router.post('/login', (req, res ) => {
                     'isAdmin': doc.isAdmin
                 });
               } else {
-                return res.status(403).json({ 'error': 'invalid password' });
+                return res.status(403).json({ 'error': 'Email or Password invalid' });
               }
         });
         } else {
-            res.status(500).json({'error': 'error boy'})
+            res.status(500).json({'error': 'Email or Password invalid'})
         }
       })
       .catch( err => {
-        return res.status(500).json({ 'error': 'unable to verify user' });
+        return res.status(500).json({ 'error': 'Email or Password invalid' });
       });
 })
 
