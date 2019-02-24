@@ -172,6 +172,171 @@ router.get('/allMemesLikesComments/:postId', (req, res ) => {
 
 
 
+
+
+
+router.get('/allMemesLikesCommentsForProfil/:userId', (req, res ) => {
+
+    var headerAuth  = req.headers['authorization'];
+    var userId      = jwtUtils.getUserId(headerAuth);
+
+    var itemsProcessed = 0;
+    var itemsProcessedBis = 0;
+    var itemsProcessedBisBis = 0;
+    var itemsProcessedBisBisBis = 0;
+    var userId = req.params.userId;
+    MemeModel.find({
+        userId: userId
+    }).sort({'_id' : -1 })
+    .then(function(memesFound) {
+        var like = []
+        memesFound.forEach((item, index, array) => {
+                like = JSON.parse(JSON.stringify(memesFound));
+                LikeModel.find({ memeId: item._id})
+                .then(function(likesFind) {
+                    like[index].likes = likesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                    like.forEach((item, index, array) => {
+                        comments = JSON.parse(JSON.stringify(like));
+                        CommentModel.find({ memeId: item._id})
+                        .then(function(commentsFind) {
+
+                            comments[index].comments = commentsFind.length;
+                        itemsProcessedBis++;
+                        if(itemsProcessedBis === array.length) {                     
+                          comments.forEach((item, index, array) => {
+                            finalData = JSON.parse(JSON.stringify(comments));
+                            LikeModel.find({ memeId: item._id , userId: userId})
+                            .then(function(isLiked) {
+                                finalData[index].isLiked = false;
+                                if(isLiked[0]) {
+                                    finalData[index].isLiked = true;
+                                }
+                                itemsProcessedBisBis++;
+                                if(itemsProcessedBisBis === array.length) {
+                                finalDataBis = JSON.parse(JSON.stringify(finalData));
+                                finalDataBis.forEach((item, index, array) => {
+                                    CommentModel.find({ memeId: item._id})
+                                    .then(function(commentsNb) {
+                                        finalDataBis[index].commentsNb = commentsNb.length;        
+                                        itemsProcessedBisBisBis++;
+                                        if(itemsProcessedBisBisBis === array.length) {
+                                        callback(finalDataBis,res);
+                                        }
+                                    });
+                                });
+                                }
+                            });
+                        });
+                        }
+                      });
+                })
+
+                }
+              });
+        })
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
+
+router.get('/allMemesLikedForProfil/:userId', (req, res ) => {
+
+    var headerAuth  = req.headers['authorization'];
+    var userIdConnected      = jwtUtils.getUserId(headerAuth);
+
+    var itemsProcessed = 0;
+    var itemsProcessedBis = 0;
+    var itemsProcessedBisBis = 0;
+    var itemsProcessedBisBisBis = 0;
+    var itemsEnd = 1;
+    var userId = req.params.userId;
+    const memesFound = [];
+    console.log("work?")
+    LikeModel.find({ userId: userId}).sort({'_id' : -1 }).then(function(likesFound)  {
+        console.log("work?")
+        likesFound.forEach((item,index,array) => {
+            MemeModel.find({
+                _id: item.memeId
+            }).then(function(meme){
+                memesFound.push(meme[0]);
+                console.log("push",meme[0]);
+                if(itemsEnd === array.length)
+                {   
+                    console.log("allo????");
+                    memesFound.forEach((item, index, array) => {
+                        console.log(memesFound);
+                        like = JSON.parse(JSON.stringify(memesFound));
+                        LikeModel.find({ memeId: item._id})
+                        .then(function(likesFind) {
+                            console.log("likes",likesFind)
+                            like[index].likes = likesFind.length;
+                        itemsProcessed++;
+                        if(itemsProcessed === array.length) {
+                            like.forEach((item, index, array) => {
+                                comments = JSON.parse(JSON.stringify(like));
+                                CommentModel.find({ memeId: item._id})
+                                .then(function(commentsFind) {
+                                    console.log("commentsFind",commentsFind)
+                                    comments[index].comments = commentsFind.length;
+                                itemsProcessedBis++;
+                                if(itemsProcessedBis === array.length) {                     
+                                  comments.forEach((item, index, array) => {
+                                    finalData = JSON.parse(JSON.stringify(comments));
+                                    LikeModel.find({ memeId: item._id , userId: userId})
+                                    .then(function(isLiked) {
+                                        finalData[index].isLiked = false;
+                                        if(isLiked[0]) {
+                                            finalData[index].isLiked = true;
+                                        }
+                                        itemsProcessedBisBis++;
+                                        if(itemsProcessedBisBis === array.length) {
+                                        finalDataBis = JSON.parse(JSON.stringify(finalData));
+                                        finalDataBis.forEach((item, index, array) => {
+                                            CommentModel.find({ memeId: item._id})
+                                            .then(function(commentsNb) {
+                                                console.log("commentsNb",commentsNb)
+                                                finalDataBis[index].commentsNb = commentsNb.length;        
+                                                itemsProcessedBisBisBis++;
+                                                if(itemsProcessedBisBisBis === array.length) {
+                                                    console.log("callbacCKKKKKKK")
+                                                callback(finalDataBis,res);
+                                                
+                                                }
+                                            });
+                                        });
+                                        }
+                                    });
+                                });
+                                }
+                              });
+                        })
+            
+                        }
+                      });
+                })
+                }
+                console.log("item????");
+                itemsEnd++;
+            });
+            
+        })
+       
+    });
+
+
+        
+    })
+
+
+
+
+
 router.delete('/meme/delete/:id', (req, res ) => {
     
 
@@ -210,4 +375,6 @@ router.delete('/meme/delete/:id', (req, res ) => {
     function callback (item,res) { res.json(item); };
 
 
+
+    
 module.exports = router
