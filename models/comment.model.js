@@ -23,6 +23,10 @@ let CommentSchema = new mongoose.Schema({
         ref: 'Meme',
         require: true
     },
+    commentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    },
     text: {
         type: String,
         require: true

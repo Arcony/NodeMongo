@@ -66,18 +66,19 @@ router.post('/newMeme',  upload.single('content'),  (req, res ) => {
 
 
 
-router.get('/meme/:id', (req, res ) => {
+router.get('/meme/:memeId', (req, res ) => {
     
-    if(!req.params.id)
+    if(!req.params.memeId)
      {
          return res.status(400).send('Wrong Meme Number');
      }
      
     MemeModel.findOne({
-       _id: req.params.id
+       _id: req.params.memeId
     })
     .then(function(MemeFound) {
-        res.json({id: MemeFound.id, title: MemeFound.title, tag: MemeFound.tag, userId: MemeFound.owner, postId: MemeFound.postId});
+        console.log(MemeFound)
+        res.json(MemeFound);
     })
     .catch(err => {
         res.status(500).json(err)
