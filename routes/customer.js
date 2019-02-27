@@ -85,7 +85,7 @@ router.get('/customer/:id', (req, res ) => {
         _id: req.params.id
     })
     .then(function(CustomerFound) {
-        res.json({id: CustomerFound.id, email: CustomerFound.email, username: CustomerFound.username, picture: CustomerFound.picture, isAdmin: CustomerFound.isAdmin});
+        res.json({userId: CustomerFound.id, email: CustomerFound.email, username: CustomerFound.username, picture: CustomerFound.picture, isAdmin: CustomerFound.isAdmin});
     })
     .catch(err => {
         res.status(500).json(err)
