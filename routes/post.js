@@ -1,7 +1,7 @@
 let CustomerModel = require('../models/customer.model');
 let PostModel = require('../models/post.model');
 let MemeModel = require('../models/meme.model');
-
+let _ = require('lodash')
 let jwtUtils = require('../utils/jwt.utils');
 let express = require('express');
 let router = express.Router();
@@ -9,7 +9,8 @@ let bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-
+const moment = require('moment')
+const today = moment().startOf('day')
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -94,6 +95,69 @@ router.get('/allPostMemes', (req, res ) => {
                 itemsProcessed++;
                 if(itemsProcessed === array.length) {
                   callback(test,res);
+                }
+              });
+        })
+
+        
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
+router.get('/memesHot', (req, res ) => {
+    
+    var itemsProcessed = 0;
+    PostModel.find({
+    }).sort({ '_id' : -1 })
+    .then(function(PostFound) {
+        console.log(PostFound)
+       var test = []
+        PostFound.forEach((item, index, array) => {
+                test = JSON.parse(JSON.stringify(PostFound));
+                MemeModel.find({ postId: item._id})
+                .then(function(MemesFind) {
+              test[index].memesRelated = MemesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                    sortedData = test.slice(0,10);
+                    sortedData = _.sortBy( sortedData , [(data) => data.memesRelated]).reverse();
+                    console.log(sortedData);
+                    callback(sortedData,res);
+                }
+              });
+        })
+
+        
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+})
+
+
+
+router.get('/memesBest', (req, res ) => {
+    
+    var itemsProcessed = 0;
+    PostModel.find({
+    }).sort({ '_id' : -1 })
+    .then(function(PostFound) {
+        console.log(PostFound)
+       var test = []
+        PostFound.forEach((item, index, array) => {
+                test = JSON.parse(JSON.stringify(PostFound));
+                MemeModel.find({ postId: item._id})
+                .then(function(MemesFind) {
+              test[index].memesRelated = MemesFind.length;
+                itemsProcessed++;
+                if(itemsProcessed === array.length) {
+                    sortedData = _.sortBy( sortedData , [(data) => data.memesRelated]).reverse();
+                    console.log(sortedData);
+                    callback(sortedData,res);
                 }
               });
         })

@@ -176,18 +176,17 @@ router.get('/allMemesLikesComments/:postId', (req, res ) => {
 
 
 
-router.get('/allMemesLikesCommentsForProfil/:userId', (req, res ) => {
+router.get('/allMemesLikesCommentsForProfil/:userFetch', (req, res ) => {
 
     var headerAuth  = req.headers['authorization'];
     var userId      = jwtUtils.getUserId(headerAuth);
-
+    var userFetch = req.params.userFetch;
     var itemsProcessed = 0;
     var itemsProcessedBis = 0;
     var itemsProcessedBisBis = 0;
     var itemsProcessedBisBisBis = 0;
-    var userId = req.params.userId;
     MemeModel.find({
-        userId: userId
+        userId: userFetch
     }).sort({'_id' : -1 })
     .then(function(memesFound) {
         var like = []
