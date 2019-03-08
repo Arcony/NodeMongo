@@ -30,6 +30,31 @@ let NotificationSchema = new mongoose.Schema({
     likeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Like',
+    },
+    text: {
+        type: String,
+        require: true
+    },
+    itemTargeted : {
+       type : mongoose.Schema.Types.ObjectId,
+       require: true
+    },
+    seen : {
+        type : Boolean,
+    },
+    clicked : {
+        type : Boolean,
+    },
+    type : {
+        type : String,
+        require : true
+    },
+    relatable : {
+        type : Number,
+        require : true
+    },
+    userList : {
+        type : [],
     }
     
   })

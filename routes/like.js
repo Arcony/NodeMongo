@@ -69,7 +69,7 @@ router.post('/dislike', (req, res ) => {
        userId: userId
     }).remove()
     .then(function(LikeFound) {
-        res.json({LikeFound});
+        res.json(LikeFound);
     })
     .catch(err => {
         res.status(500).json(err)
