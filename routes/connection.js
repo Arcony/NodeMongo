@@ -6,15 +6,15 @@ var bcrypt = require('bcryptjs');
 
 
 router.post('/login', (req, res ) => {
-    var email    = req.body.email;
+    var username    = req.body.username;
     var password = req.body.password;
 
-    if (email == null ||  password == null) {
+    if (username == null ||  password == null) {
         return res.status(400).json({ 'error': 'Missing parameters' });
     }
 
     CustomerModel.findOne({
-        email: req.body.email
+        username: req.body.username
     })
       .then( doc => {
         if(doc)
